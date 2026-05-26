@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Date + Week</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    height: 100%;
+  }
+  #widget {
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    padding: 0 4px;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Helvetica, "Apple Color Emoji", Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: rgb(55, 53, 47);            /* Notion light-mode text */
+    white-space: nowrap;
+  }
+  #widget .week { opacity: 0.55; }     /* subtle separator + week */
+  @media (prefers-color-scheme: dark) {
+    #widget { color: rgba(255, 255, 255, 0.81); }  /* Notion dark-mode text */
+  }
+</style>
+</head>
+<body>
+  <div id="widget"></div>
+  <script>
+    function isoWeek(d) {
+      // ISO 8601 week number (weeks start Monday, week 1 contains the first Thursday)
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = (date.getUTCDay() + 6) % 7;        // Mon=0 ... Sun=6
+      date.setUTCDate(date.getUTCDate() - dayNum + 3);  // nearest Thursday
+      const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+      const firstDayNum = (firstThursday.getUTCDay() + 6) % 7;
+      firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayNum + 3);
+      return 1 + Math.round((date - firstThursday) / (7 * 24 * 3600 * 1000));
+    }
+
+    function render() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString(undefined, {
+        weekday: "long", year: "numeric", month: "long", day: "numeric"
+      });
+      document.getElementById("widget").innerHTML =
+        dateStr + ' <span class="week">&nbsp;·&nbsp; Week ' + isoWeek(now) + '</span>';
+    }
+
+    render();
+    setInterval(render, 60 * 1000); // keep it current; rolls over at midnight
+  </script>
+</body>
+</html>
